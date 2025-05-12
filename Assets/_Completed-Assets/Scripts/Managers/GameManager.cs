@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using UnityEngine.UI; // Still needed for the public Text field
 
 namespace Complete
 {
@@ -11,23 +11,30 @@ namespace Complete
         public float m_StartDelay = 3f;             // The delay between the start of RoundStarting and RoundPlaying phases.
         public float m_EndDelay = 3f;               // The delay between the end of RoundPlaying and RoundEnding phases.
         public CameraControl m_CameraControl;       // Reference to the CameraControl script for control during different phases.
-        public Text m_MessageText;                  // Reference to the overlay Text to display winning text, etc.
+
+        // This Text component will be assigned in the Inspector and passed to the GameMessageUIService
+        public Text m_MessageTextComponent;         // Reference to the overlay Text to display winning text, etc.
+
         public GameObject m_TankPrefab;             // Reference to the prefab the players will control.
         public TankManager[] m_Tanks;               // A collection of managers for enabling and disabling different aspects of the tanks.
 
-        
+
         private int m_RoundNumber;                  // Which round the game is currently on.
         private WaitForSeconds m_StartWait;         // Used to have a delay whilst the round starts.
         private WaitForSeconds m_EndWait;           // Used to have a delay whilst the round or game ends.
         private TankManager m_RoundWinner;          // Reference to the winner of the current round.  Used to make an announcement of who won.
         private TankManager m_GameWinner;           // Reference to the winner of the game.  Used to make an announcement of who won.
 
+        private GameMessageUIService m_GameMessageUIService; // Reference to our new UI service
 
         private void Start()
         {
             // Create the delays so they only have to be made once.
             m_StartWait = new WaitForSeconds (m_StartDelay);
             m_EndWait = new WaitForSeconds (m_EndDelay);
+
+            // Instantiate the UI service, passing it the Text component.
+            m_GameMessageUIService = new GameMessageUIService(m_MessageTextComponent);
 
             SpawnAllTanks();
             SetCameraTargets();
@@ -106,7 +113,7 @@ namespace Complete
 
             // Increment the round number and display text showing the players what round it is.
             m_RoundNumber++;
-            m_MessageText.text = "ROUND " + m_RoundNumber;
+            m_GameMessageUIService.DisplayRoundStart(m_RoundNumber);
 
             // Wait for the specified length of time until yielding control back to the game loop.
             yield return m_StartWait;
@@ -119,7 +126,7 @@ namespace Complete
             EnableTankControl ();
 
             // Clear the text from the screen.
-            m_MessageText.text = string.Empty;
+            m_GameMessageUIService.ClearMessage();
 
             // While there is not one tank left...
             while (!OneTankLeft())
@@ -149,8 +156,7 @@ namespace Complete
             m_GameWinner = GetGameWinner ();
 
             // Get a message based on the scores and whether or not there is a game winner and display it.
-            string message = EndMessage ();
-            m_MessageText.text = message;
+            m_GameMessageUIService.DisplayRoundEndResults(m_RoundWinner, m_GameWinner, m_Tanks);
 
             // Wait for the specified length of time until yielding control back to the game loop.
             yield return m_EndWait;
@@ -174,8 +180,8 @@ namespace Complete
             // If there are one or fewer tanks remaining return true, otherwise return false.
             return numTanksLeft <= 1;
         }
-        
-        
+
+
         // This function is to find out if there is a winner of the round.
         // This function is called with the assumption that 1 or fewer tanks are currently active.
         private TankManager GetRoundWinner()
@@ -208,33 +214,7 @@ namespace Complete
             return null;
         }
 
-
-        // Returns a string message to display at the end of each round.
-        private string EndMessage()
-        {
-            // By default when a round ends there are no winners so the default end message is a draw.
-            string message = "DRAW!";
-
-            // If there is a winner then change the message to reflect that.
-            if (m_RoundWinner != null)
-                message = m_RoundWinner.m_ColoredPlayerText + " WINS THE ROUND!";
-
-            // Add some line breaks after the initial message.
-            message += "\n\n\n\n";
-
-            // Go through all the tanks and add each of their scores to the message.
-            for (int i = 0; i < m_Tanks.Length; i++)
-            {
-                message += m_Tanks[i].m_ColoredPlayerText + ": " + m_Tanks[i].m_Wins + " WINS\n";
-            }
-
-            // If there is a game winner, change the entire message to reflect that.
-            if (m_GameWinner != null)
-                message = m_GameWinner.m_ColoredPlayerText + " WINS THE GAME!";
-
-            return message;
-        }
-
+        // The EndMessage() method has been moved to GameMessageUIService.DisplayRoundEndResults()
 
         // This function is used to turn all the tanks back on and reset their positions and properties.
         private void ResetAllTanks()
