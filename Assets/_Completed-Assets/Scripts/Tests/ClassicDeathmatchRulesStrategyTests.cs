@@ -3,10 +3,10 @@ using NUnit.Framework;
 using UnityEngine;
 using Complete;
 
-public class GameRulesManagerTests
+public class ClassicDeathmatchRulesStrategyTests
 {
     private const int DefaultNumRoundsToWin = 3;
-    private GameRulesManager _rulesManager;
+    private ClassicDeathmatchRulesStrategy _rulesStrategy;
 
     private GameObject _tank1GameObject;
     private GameObject _tank2GameObject;
@@ -15,7 +15,7 @@ public class GameRulesManagerTests
     [SetUp]
     public void SetUp()
     {
-        _rulesManager = new GameRulesManager(DefaultNumRoundsToWin);
+        _rulesStrategy = new ClassicDeathmatchRulesStrategy(DefaultNumRoundsToWin);
 
         _tank1GameObject = new GameObject("TestTank1_Obj");
         _tank2GameObject = new GameObject("TestTank2_Obj");
@@ -46,72 +46,79 @@ public class GameRulesManagerTests
     }
 
     [Test]
-    public void IsOnlyOneTankLeft_NullTanksArray_ReturnsTrue()
+    public void StartRound_DoesNotThrowException()
     {
-        Assert.IsTrue(_rulesManager.IsOnlyOneTankLeft(null));
+        Assert.DoesNotThrow(() => _rulesStrategy.StartRound());
     }
 
     [Test]
-    public void IsOnlyOneTankLeft_EmptyTanksArray_ReturnsTrue()
+    public void IsRoundOver_NullTanksArray_ReturnsTrue()
     {
-        Assert.IsTrue(_rulesManager.IsOnlyOneTankLeft(Array.Empty<TankManager>()));
+        Assert.IsTrue(_rulesStrategy.IsRoundOver(null));
     }
 
     [Test]
-    public void IsOnlyOneTankLeft_NoActiveTanks_ReturnsTrue()
+    public void IsRoundOver_EmptyTanksArray_ReturnsTrue()
+    {
+        Assert.IsTrue(_rulesStrategy.IsRoundOver(Array.Empty<TankManager>()));
+    }
+
+    [Test]
+    public void IsRoundOver_NoActiveTanks_ReturnsTrue()
     {
         TankManager[] tanks = {
             CreateTestTankManager(_tank1GameObject, 1, 0, false),
             CreateTestTankManager(_tank2GameObject, 2, 0, false)
         };
-        Assert.IsTrue(_rulesManager.IsOnlyOneTankLeft(tanks));
+        Assert.IsTrue(_rulesStrategy.IsRoundOver(tanks));
     }
 
     [Test]
-    public void IsOnlyOneTankLeft_OneActiveTank_ReturnsTrue()
+    public void IsRoundOver_OneActiveTank_ReturnsTrue()
     {
         TankManager[] tanks = {
             CreateTestTankManager(_tank1GameObject, 1, 0, true),
             CreateTestTankManager(_tank2GameObject, 2, 0, false)
         };
-        Assert.IsTrue(_rulesManager.IsOnlyOneTankLeft(tanks));
+        Assert.IsTrue(_rulesStrategy.IsRoundOver(tanks));
     }
 
     [Test]
-    public void IsOnlyOneTankLeft_MultipleActiveTanks_ReturnsFalse()
+    public void IsRoundOver_MultipleActiveTanks_ReturnsFalse()
     {
         TankManager[] tanks = {
             CreateTestTankManager(_tank1GameObject, 1, 0, true),
             CreateTestTankManager(_tank2GameObject, 2, 0, true)
         };
-        Assert.IsFalse(_rulesManager.IsOnlyOneTankLeft(tanks));
+        Assert.IsFalse(_rulesStrategy.IsRoundOver(tanks));
     }
 
     [Test]
-    public void IsOnlyOneTankLeft_OneTankManagerIsNullInArray_IgnoresNullAndCorrectlyCounts()
+    public void IsRoundOver_OneTankManagerIsNullInArray_IgnoresNullAndCorrectlyCounts()
     {
         TankManager[] tanks = {
             CreateTestTankManager(_tank1GameObject, 1, 0, true),
             null,
             CreateTestTankManager(_tank2GameObject, 2, 0, true)
         };
-        Assert.IsFalse(_rulesManager.IsOnlyOneTankLeft(tanks));
+        Assert.IsFalse(_rulesStrategy.IsRoundOver(tanks));
     }
 
     [Test]
-    public void IsOnlyOneTankLeft_OneTankManagerInstanceIsNull_IgnoresAndCorrectlyCounts()
+    public void IsRoundOver_OneTankManagerInstanceIsNull_IgnoresAndCorrectlyCounts()
     {
         TankManager[] tanks = {
             CreateTestTankManager(_tank1GameObject, 1, 0, true),
-            CreateTestTankManager(null, 2, 0, true), CreateTestTankManager(_tank2GameObject, 3, 0, true)
+            CreateTestTankManager(null, 2, 0, true),
+            CreateTestTankManager(_tank2GameObject, 3, 0, true)
         };
-        Assert.IsFalse(_rulesManager.IsOnlyOneTankLeft(tanks));
+        Assert.IsFalse(_rulesStrategy.IsRoundOver(tanks));
     }
 
     [Test]
     public void DetermineRoundWinner_NullTanksArray_ReturnsNull()
     {
-        Assert.IsNull(_rulesManager.DetermineRoundWinner(null));
+        Assert.IsNull(_rulesStrategy.DetermineRoundWinner(null));
     }
 
     [Test]
@@ -121,7 +128,7 @@ public class GameRulesManagerTests
             CreateTestTankManager(_tank1GameObject, 1, 0, false),
             CreateTestTankManager(_tank2GameObject, 2, 0, false)
         };
-        Assert.IsNull(_rulesManager.DetermineRoundWinner(tanks));
+        Assert.IsNull(_rulesStrategy.DetermineRoundWinner(tanks));
     }
 
     [Test]
@@ -131,7 +138,7 @@ public class GameRulesManagerTests
         var tank2Active = CreateTestTankManager(_tank2GameObject, 2, 1, true);
         TankManager[] tanks = { tank1, tank2Active };
 
-        var winner = _rulesManager.DetermineRoundWinner(tanks);
+        var winner = _rulesStrategy.DetermineRoundWinner(tanks);
         Assert.AreSame(tank2Active, winner);
     }
 
@@ -142,14 +149,14 @@ public class GameRulesManagerTests
         var tank2Active = CreateTestTankManager(_tank2GameObject, 2, 1, true);
         TankManager[] tanks = { tank1Active, tank2Active };
 
-        var winner = _rulesManager.DetermineRoundWinner(tanks);
+        var winner = _rulesStrategy.DetermineRoundWinner(tanks);
         Assert.AreSame(tank1Active, winner);
     }
 
     [Test]
     public void DetermineGameWinner_NullTanksArray_ReturnsNull()
     {
-        Assert.IsNull(_rulesManager.DetermineGameWinner(null));
+        Assert.IsNull(_rulesStrategy.DetermineGameWinner(null));
     }
 
     [Test]
@@ -159,7 +166,7 @@ public class GameRulesManagerTests
             CreateTestTankManager(_tank1GameObject, 1, DefaultNumRoundsToWin - 1, true),
             CreateTestTankManager(_tank2GameObject, 2, 0, true)
         };
-        Assert.IsNull(_rulesManager.DetermineGameWinner(tanks));
+        Assert.IsNull(_rulesStrategy.DetermineGameWinner(tanks));
     }
 
     [Test]
@@ -169,7 +176,7 @@ public class GameRulesManagerTests
         var tank2Winner = CreateTestTankManager(_tank2GameObject, 2, DefaultNumRoundsToWin, true);
         TankManager[] tanks = { tank1, tank2Winner };
 
-        var gameWinner = _rulesManager.DetermineGameWinner(tanks);
+        var gameWinner = _rulesStrategy.DetermineGameWinner(tanks);
         Assert.AreSame(tank2Winner, gameWinner);
     }
 
@@ -180,7 +187,7 @@ public class GameRulesManagerTests
         var tank2Winner = CreateTestTankManager(_tank2GameObject, 2, DefaultNumRoundsToWin, true);
         TankManager[] tanks = { tank1Winner, tank2Winner };
 
-        var gameWinner = _rulesManager.DetermineGameWinner(tanks);
+        var gameWinner = _rulesStrategy.DetermineGameWinner(tanks);
         Assert.AreSame(tank1Winner, gameWinner);
     }
 }
