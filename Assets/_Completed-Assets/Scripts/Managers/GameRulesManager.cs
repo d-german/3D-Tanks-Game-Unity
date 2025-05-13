@@ -1,4 +1,6 @@
-﻿namespace Complete
+﻿using System.Linq;
+
+namespace Complete
 {
     public class GameRulesManager
     {
@@ -13,41 +15,17 @@
         {
             if (tanks == null || tanks.Length == 0) return true;
 
-            int numTanksLeft = 0;
-
-            for (int i = 0; i < tanks.Length; i++)
-            {
-                if (tanks[i] != null && tanks[i].m_Instance != null && tanks[i].m_Instance.activeSelf)
-                    numTanksLeft++;
-            }
-
-            return numTanksLeft <= 1;
+            return tanks.Count(t => t != null && t.m_Instance != null && t.m_Instance.activeSelf) <= 1;
         }
 
         public TankManager DetermineRoundWinner(TankManager[] tanks)
         {
-            if (tanks == null) return null;
-
-            for (int i = 0; i < tanks.Length; i++)
-            {
-                if (tanks[i] != null && tanks[i].m_Instance != null && tanks[i].m_Instance.activeSelf)
-                    return tanks[i];
-            }
-
-            return null;
+            return tanks?.FirstOrDefault(t => t != null && t.m_Instance != null && t.m_Instance.activeSelf);
         }
 
         public TankManager DetermineGameWinner(TankManager[] tanks)
         {
-            if (tanks == null) return null;
-
-            for (int i = 0; i < tanks.Length; i++)
-            {
-                if (tanks[i] != null && tanks[i].m_Wins == _numRoundsToWin)
-                    return tanks[i];
-            }
-
-            return null;
+            return tanks?.FirstOrDefault(t => t != null && t.m_Wins == _numRoundsToWin);
         }
     }
 }
