@@ -13,7 +13,7 @@ namespace Complete
 
         public bool IsOnlyOneTankLeft(TankManager[] tanks)
         {
-            if (tanks == null || tanks.Length == 0) return true;
+            if (tanks == null) return true;
 
             return tanks.Count(t => t != null && t.m_Instance != null && t.m_Instance.activeSelf) <= 1;
         }
