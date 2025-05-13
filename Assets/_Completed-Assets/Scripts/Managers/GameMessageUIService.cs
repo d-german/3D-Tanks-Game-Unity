@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Complete
 {
-    public class GameMessageUIService
+    public class GameMessageUIService : IGameMessageUIService
     {
         private readonly Text _messageTextComponent;
 
@@ -52,4 +52,12 @@ namespace Complete
             _messageTextComponent.text = message;
         }
     }
+}
+
+// No direct 'using UnityEngine;' needed if ILogger is in a general namespace
+// and _wrappedService (IGameMessageUIService) doesn't expose raw Unity types
+// that the decorator needs to directly interact with beyond calling its methods.
+
+namespace Complete // Assuming IGameMessageUIService and TankManager are in this namespace
+{
 }

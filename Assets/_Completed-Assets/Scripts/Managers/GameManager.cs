@@ -11,21 +11,17 @@ namespace Complete
         public float m_StartDelay = 3f;
         public float m_EndDelay = 3f;
         public CameraControl m_CameraControl;
-
         public Text m_MessageTextComponent;
         public GameObject m_TankPrefab;
-
         public TankManager[] m_Tanks;
 
         private int m_RoundNumber;
         private WaitForSeconds m_StartWait;
         private WaitForSeconds m_EndWait;
-
         private TankManager m_RoundWinner;
-
         private TankManager m_GameWinner;
 
-        private GameMessageUIService m_GameMessageUIService;
+        private IGameMessageUIService m_GameMessageUIService;
         private GameRulesManager m_GameRulesManager;
 
         private void Start()
@@ -33,7 +29,12 @@ namespace Complete
             m_StartWait = new WaitForSeconds(m_StartDelay);
             m_EndWait = new WaitForSeconds(m_EndDelay);
 
-            m_GameMessageUIService = new GameMessageUIService(m_MessageTextComponent);
+            ILogger loggerForDecorator = new UnityLogger();
+
+            IGameMessageUIService concreteMessageService = new GameMessageUIService(m_MessageTextComponent);
+
+            m_GameMessageUIService = new LoggingGameMessageUIServiceDecorator(concreteMessageService, loggerForDecorator);
+
             m_GameRulesManager = new GameRulesManager(m_NumRoundsToWin);
 
             SpawnAllTanks();
