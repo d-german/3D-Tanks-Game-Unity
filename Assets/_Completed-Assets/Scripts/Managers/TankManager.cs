@@ -18,6 +18,8 @@ namespace Complete
         [HideInInspector] public GameObject m_Instance;         // A reference to the instance of the tank when it is created.
         [HideInInspector] public int m_Wins;                    // The number of wins this player has so far.
         
+        // Public field to store the TankHealth component reference
+        [HideInInspector] public TankHealth m_Health;
 
         private TankMovement m_Movement;                        // Reference to tank's movement script, used to disable and enable control.
         private TankShooting m_Shooting;                        // Reference to tank's shooting script, used to disable and enable control.
@@ -29,6 +31,7 @@ namespace Complete
             // Get references to the components.
             m_Movement = m_Instance.GetComponent<TankMovement> ();
             m_Shooting = m_Instance.GetComponent<TankShooting> ();
+            m_Health = m_Instance.GetComponent<TankHealth>(); // <<< MINIMAL CHANGE: Get and cache the TankHealth component
             m_CanvasGameObject = m_Instance.GetComponentInChildren<Canvas> ().gameObject;
 
             // Set the player numbers to be consistent across the scripts.
