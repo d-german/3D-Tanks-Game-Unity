@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using UnityEngine;
+using System;
 
 namespace Complete
 {
@@ -8,16 +8,18 @@ namespace Complete
         private readonly float _roundDurationSeconds;
         private readonly int _numRoundsToWinForGame;
         private float _roundStartTime;
+        private readonly ITimeProvider _timeProvider;
 
-        public TimedRoundRulesStrategy(float roundDurationSeconds, int numRoundsToWinForGame)
+        public TimedRoundRulesStrategy(float roundDurationSeconds, int numRoundsToWinForGame, ITimeProvider timeProvider)
         {
             _roundDurationSeconds = roundDurationSeconds;
             _numRoundsToWinForGame = numRoundsToWinForGame;
+            _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         }
 
         public void StartRound()
         {
-            _roundStartTime = Time.time;
+            _roundStartTime = _timeProvider.Time;
         }
 
         public bool IsRoundOver(TankManager[] tanks)
@@ -25,7 +27,7 @@ namespace Complete
             var oneTankLeft = (tanks == null) ||
                               (tanks.Count(t => t != null && t.m_Instance != null && t.m_Instance.activeSelf) <= 1);
 
-            var timeExpired = (Time.time - _roundStartTime) >= _roundDurationSeconds;
+            var timeExpired = (_timeProvider.Time - _roundStartTime) >= _roundDurationSeconds;
 
             return oneTankLeft || timeExpired;
         }
@@ -44,13 +46,13 @@ namespace Complete
 
             foreach (var tankManager in activeTanks)
             {
-                var healthComponent = tankManager.m_Health;
+                var healthInfo = tankManager.m_HealthProvider;
 
-                if (healthComponent != null)
+                if (healthInfo != null)
                 {
-                    if (healthComponent.CurrentHealth > maxHealth)
+                    if (healthInfo.CurrentHealth > maxHealth)
                     {
-                        maxHealth = healthComponent.CurrentHealth;
+                        maxHealth = healthInfo.CurrentHealth;
                         winnerByHealth = tankManager;
                     }
                 }

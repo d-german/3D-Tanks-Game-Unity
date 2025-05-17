@@ -47,7 +47,7 @@ namespace Complete
             switch (m_SelectedGameMode)
             {
                 case GameMode.TimedRounds:
-                    m_GameRulesStrategy = new TimedRoundRulesStrategy(m_RoundDurationSeconds, m_NumRoundsToWin);
+                    m_GameRulesStrategy = new TimedRoundRulesStrategy(m_RoundDurationSeconds, m_NumRoundsToWin, new UnityTimeProvider());
                     Debug.Log(
                         $"Game Mode: Timed Rounds ({m_RoundDurationSeconds}s per round, {m_NumRoundsToWin} to win game)");
                     break;
