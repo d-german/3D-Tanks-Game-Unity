@@ -1,7 +1,5 @@
 ﻿using System.Linq;
 
-// For TankManager.m_Instance.activeSelf
-
 namespace Complete
 {
     public class ClassicDeathmatchRulesStrategy : IGameRulesStrategy
