@@ -10,7 +10,10 @@ namespace Complete
         private float _roundStartTime;
         private readonly ITimeProvider _timeProvider;
 
-        public TimedRoundRulesStrategy(float roundDurationSeconds, int numRoundsToWinForGame, ITimeProvider timeProvider)
+        public TimedRoundRulesStrategy(
+            float roundDurationSeconds,
+            int numRoundsToWinForGame,
+            ITimeProvider timeProvider)
         {
             _roundDurationSeconds = roundDurationSeconds;
             _numRoundsToWinForGame = numRoundsToWinForGame;
@@ -48,14 +51,10 @@ namespace Complete
             {
                 var healthInfo = tankManager.m_HealthProvider;
 
-                if (healthInfo != null)
-                {
-                    if (healthInfo.CurrentHealth > maxHealth)
-                    {
-                        maxHealth = healthInfo.CurrentHealth;
-                        winnerByHealth = tankManager;
-                    }
-                }
+                if (healthInfo == null) continue;
+                if (!(healthInfo.CurrentHealth > maxHealth)) continue;
+                maxHealth = healthInfo.CurrentHealth;
+                winnerByHealth = tankManager;
             }
 
             return winnerByHealth;
